@@ -11,20 +11,16 @@ export default async function handler(req, res) {
       throw new Error("Failed to fetch from Metals.dev");
     }
 
-    const data = await apiRes.json();
-    const pricePerOunce = data.metals?.gold;
-    const pricePerGram = pricePerOunce ? pricePerOunce / 31.1035 : null;
- console.log("datadatadata :::", JSON.stringify(data, null, 2));
-    res.status(200).json({
-      city,
-      rates: [
-        {
-          karat: "24K",
-          unit: "gram",
-          price: pricePerGram ? Math.round(pricePerGram) : 6000,
-        },
-      ],
-    });
+    const data = await apiRes.json();    
+    const ounceToGram = 31.1035;
+    const pricePerGram24k = data.metals?.gold / ounceToGram;
+
+    const rates = [
+      { karat: "24K", unit: "gram", price: Math.round(pricePerGram24k) },
+      { karat: "22K", unit: "gram", price: Math.round(pricePerGram24k * 0.916) },
+      { karat: "18K", unit: "gram", price: Math.round(pricePerGram24k * 0.750) },
+    ];
+  res.status(200).json({ city, rates });
   } catch (err) {
     console.error("Metals.dev API error:", err);
     res.status(500).json({
