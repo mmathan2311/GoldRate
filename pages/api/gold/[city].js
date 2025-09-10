@@ -14,11 +14,13 @@ export default async function handler(req, res) {
     const data = await apiRes.json();    
     const ounceToGram = 31.1035;
     const pricePerGram24k = data.metals?.gold / ounceToGram;
-
+    // Markup to match Indian retail market
+    const markupFactor = 1.074;
+    
     const rates = [
-      { karat: "24K", unit: "gram", price: Math.round(pricePerGram24k) },
-      { karat: "22K", unit: "gram", price: Math.round(pricePerGram24k * 0.916) },
-      { karat: "18K", unit: "gram", price: Math.round(pricePerGram24k * 0.750) },
+      { karat: "24K", unit: "gram", price: Math.round(pricePerGram24k * markupFactor) },
+      { karat: "22K", unit: "gram", price: Math.round(pricePerGram24k * 0.916 * markupFactor) },
+      { karat: "18K", unit: "gram", price: Math.round(pricePerGram24k * 0.750 * markupFactor) },
     ];
   res.status(200).json({ city, rates });
   } catch (err) {
