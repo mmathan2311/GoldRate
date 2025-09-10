@@ -1,36 +1,27 @@
-export default async function handler(req, res) {
-  const { city } = req.query;
+export async function getServerSideProps({ params, req }) {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    `http://${req.headers.host}`;
 
-  try {
-    const apiRes = await fetch(
-      `https://api.metals.dev/v1/latest?api_key=${process.env.METALS_DEV_API_KEY}&currency=INR&metals=XAU`
-    );
+  const res = await fetch(`${baseUrl}/api/gold/${params.city}`);
+  const data = await res.json();
 
-    if (!apiRes.ok) {
-      throw new Error("Failed to fetch from Metals.dev");
-    }
+  return { props: { data } };
+}
 
-    const data = await apiRes.json();
-
-    // Metals.dev gives gold price per OUNCE → convert to per GRAM
-    const pricePerOunce = data.metals?.XAU;
-    const pricePerGram = pricePerOunce ? pricePerOunce / 31.1035 : null;
-
-    res.status(200).json({
-      city,
-      rates: [
-        {
-          karat: "24K",
-          unit: "gram",
-          price: pricePerGram ? Math.round(pricePerGram) : 6000, // fallback 6000
-        },
-      ],
-    });
-  } catch (err) {
-    console.error("Metals.dev API error:", err);
-    res.status(500).json({
-      city,
-      rates: [{ karat: "24K", unit: "gram", price: 6000 }], // fallback
-    });
+export default function GoldPage({ data }) {
+  if (!data) {
+    return <p>Unable to fetch gold rate.</p>;
   }
+
+  return (
+    <div style={{ fontFamily: "sans-serif", padding: "20px" }}>
+      <h1>Gold Rate in {data.city}</h1>
+      {data.rates.map((rate, idx) => (
+        <p key={idx}>
+          {rate.karat} — {rate.price} INR per {rate.unit}
+        </p>
+      ))}
+    </div>
+  );
 }
