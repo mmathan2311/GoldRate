@@ -15,8 +15,15 @@ export default async function handler(req, res) {
     const ounceToGram = 31.1035;
     const pricePerGram24k = data.metals?.gold / ounceToGram;
     // Markup to match Indian retail market
-    const markupFactor = 1.074;
-    
+    const cityMarkup = {
+      chennai: 1.074, // matches 22K = ₹10,150
+      mumbai: 1.065,
+      delhi: 1.070,
+      kolkata: 1.065,
+      bangalore: 1.065,
+      hyderabad: 1.065,   
+    };
+const markupFactor = cityMarkup[city.toLowerCase()] || 1.07;  
     const rates = [
       { karat: "24K", unit: "gram", price: Math.round(pricePerGram24k * markupFactor) },
       { karat: "22K", unit: "gram", price: Math.round(pricePerGram24k * 0.916 * markupFactor) },
